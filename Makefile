@@ -37,12 +37,12 @@ ifeq ($(strip $(wildcard $(CERT_KEY))$(wildcard $(CERT_CRT))),)
 	@mkdir -p $(CERT_OUTPUT_DIR)
 	@(cd ./self-signed-ssl && ./self-signed-ssl --no-interaction -c 'XX' -s 'LocalDevState' -l 'LocalDevCity' -o 'LocalDevelopment' -u 'DevTeam' -n '*.docker.localhost' -a '*.docker.localhost')
 	@echo "Copying certificates to $(CERT_DIR)..."
-	@cp $(CERT_OUTPUT_DIR)/docker.localhost.crt $(CERT_CRT)
-	@cp $(CERT_OUTPUT_DIR)/docker.localhost.key $(CERT_KEY)
+	@cp $(CERT_OUTPUT_DIR)/docker.localhost/docker.localhost.crt $(CERT_CRT)
+	@cp $(CERT_OUTPUT_DIR)/docker.localhost/docker.localhost.key $(CERT_KEY)
 	@echo "Certificates generated and copied."
 	@echo "---------------------------------------------------------------------"
 	@echo "IMPORTANT: Add the CA certificate to your browser's trusted CAs:"
-	@echo "CA certificate can be found at: $(CERT_OUTPUT_DIR)/CA.pem (or similar name)"
+	@echo "CA certificate can be found at: $(CERT_OUTPUT_DIR)/ca/CA.pem (or similar name)"
 	@echo "See self-signed-ssl/README.MD for instructions."
 	@echo "---------------------------------------------------------------------"
 else
@@ -54,6 +54,8 @@ clean-certs: ## Remove generated SSL certificates and the output directory
 	@rm -f $(CERT_KEY) $(CERT_CRT)
 	@echo "Removing SSL certificate output directory $(CERT_OUTPUT_DIR)..."
 	@rm -rf $(CERT_OUTPUT_DIR)
+	@echo "Removing any stray certificate files from self-signed-ssl root..."
+	@rm -f ./self-signed-ssl/*.key ./self-signed-ssl/*.pem ./self-signed-ssl/*.srl ./self-signed-ssl/*.crt ./self-signed-ssl/*.csr
 	@echo "Certificates cleaned."
 
 ##
