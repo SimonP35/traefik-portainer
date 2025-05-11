@@ -1,0 +1,57 @@
+networks:
+  traefik_proxy_network:
+    name: traefik_proxy_network
+    driver: bridge
+services:
+  traefik:
+    image: traefik:${TRAEFIK_VERSION}
+    networks:
+      - traefik_proxy_network
+    container_name: traefik
+    restart: unless-stopped
+    profiles:
+      - common
+    security_opt:
+      - no-new-privileges:true
+    extra_hosts:
+      - "host.docker.internal:host-gateway"      
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik-dashboard.entrypoints=websecure"
+      - "traefik.http.routers.traefik-dashboard.rule=Host(`traefik.docker.localhost`)"
+      - "traefik.http.routers.traefik-dashboard.service=api@internal"
+      - "traefik.http.routers.traefik-dashboard.tls=true"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./traefik-data/configurations/dynamic.yml:/etc/traefik/dynamic_conf.yaml:ro
+      - ./traefik-data/traefik.yml:/etc/traefik/traefik.yaml:ro
+      - ./traefik-data/certs:/etc/certs:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+  portainer:
+    image: portainer/portainer-ce:${PORTAINER_VERSION}
+    container_name: portainer
+    restart: unless-stopped
+    networks:
+      - traefik_proxy_network
+    profiles:
+      - common
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - portainer_data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.portainer-router.entrypoints=websecure"
+      - "traefik.http.routers.portainer-router.rule=Host(`portainer.docker.localhost`)"
+      - "traefik.http.routers.portainer-router.tls=true"
+      - "traefik.http.routers.portainer-router.middlewares=portainer-redirectscheme@docker"
+      - "traefik.http.middlewares.portainer-redirectscheme.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.portainer-redirectscheme.redirectscheme.permanent=true"
+      - "traefik.http.services.portainer-service.loadbalancer.server.port=9000"
+      - "traefik.http.services.portainer-service.loadbalancer.server.scheme=http"
+      - "traefik.http.routers.portainer-router.service=portainer-service"
+volumes:
+  portainer_data:
