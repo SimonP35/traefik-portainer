@@ -43,7 +43,8 @@ For your browser to trust the `*.docker.localhost` SSL certificates served by Tr
     The steps vary by browser. For **Google Chrome/Chromium**:
     *   Go to Settings -> Privacy and security -> Security.
     *   Scroll down to "Manage certificates".
-    *   Go to the "Authorities" tab.
+    *   Click on "Manage certificates imported from Windows".
+    *   Go to the "Trusted Root Certification Authorities" tab.
     *   Click "Import...".
     *   Select the `CA.pem` file (you might need to change the file type filter to "All Files" or "PEM certificates").
     *   Check "Trust this certificate for identifying websites."
