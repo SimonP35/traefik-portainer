@@ -25,7 +25,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./traefik-data/configurations/dynamic.yml:/etc/traefik/dynamic_conf.yaml:ro
+      - ./traefik-data/configs/dynamic.yml:/etc/traefik/dynamic_conf.yaml:ro
       - ./traefik-data/traefik.yml:/etc/traefik/traefik.yaml:ro
       - ./traefik-data/certs:/etc/certs:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro

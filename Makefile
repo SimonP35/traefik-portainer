@@ -56,7 +56,7 @@ clean-certs: ## Remove generated SSL certificates and the output directory
 	@rm -rf $(CERT_OUTPUT_DIR)
 	@echo "Certificates cleaned."
 ##
-## Docker Stack Managementdocker ps
+## Docker Stack Management
 ## -----------------------
 # The network 'traefik_proxy_network' is created automatically by docker-compose
 
