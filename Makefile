@@ -2,14 +2,14 @@
 DOCKER_COMP = docker compose
 PROJECT_NAME = traefik-portainer-stack # Define a project name
 CERT_DIR = ./traefik-data/certs
-CERT_OUTPUT_DIR = ./self-signed-ssl/docker-localhost
+CERT_OUTPUT_DIR = ./self-signed-ssl/docker-localhost # Directory for script's raw output
 CERT_KEY = $(CERT_DIR)/docker.localhost.key
 CERT_CRT = $(CERT_DIR)/docker.localhost.crt
 ENV_FILE = ./.env
 ENV_DIST_FILE = ./.env.dist
 
 .DEFAULT_GOAL = help
-.PHONY        = help start down install generate-certs clean-certs check-env clean clean-all full-clean
+.PHONY        = help start stop install generate-certs clean-certs check-env clean clean-all full-clean
 
 ## —— ✨🍥 Konoha's Forest Docker Stack! 🍥✨ ——————————————
 
@@ -35,14 +35,14 @@ ifeq ($(strip $(wildcard $(CERT_KEY))$(wildcard $(CERT_CRT))),)
 	@echo "Generating SSL certificates..."
 	@mkdir -p $(CERT_DIR)
 	@mkdir -p $(CERT_OUTPUT_DIR)
-	@(cd ./self-signed-ssl && ./self-signed-ssl --no-interaction -c 'XX' -s 'LocalDevState' -l 'LocalDevCity' -o 'LocalDevelopment' -u 'DevTeam' -n '*.docker.localhost' -a '*.docker.localhost')
+	@./self-signed-ssl/self-signed-ssl --no-interaction -c 'XX' -s 'LocalDevState' -l 'LocalDevCity' -o 'LocalDevelopment' -u 'DevTeam' -n '*.docker.localhost' -a '*.docker.localhost' -p $(CERT_OUTPUT_DIR)
 	@echo "Copying certificates to $(CERT_DIR)..."
-	@cp $(CERT_OUTPUT_DIR)/docker.localhost/docker.localhost.crt $(CERT_CRT)
-	@cp $(CERT_OUTPUT_DIR)/docker.localhost/docker.localhost.key $(CERT_KEY)
+	@cp $(CERT_OUTPUT_DIR)/docker.localhost.crt $(CERT_CRT)
+	@cp $(CERT_OUTPUT_DIR)/docker.localhost.key $(CERT_KEY)
 	@echo "Certificates generated and copied."
 	@echo "---------------------------------------------------------------------"
 	@echo "IMPORTANT: Add the CA certificate to your browser's trusted CAs:"
-	@echo "CA certificate can be found at: $(CERT_OUTPUT_DIR)/ca/CA.pem (or similar name)"
+	@echo "CA certificate can be found at: $(CERT_OUTPUT_DIR)/CA.pem"
 	@echo "See self-signed-ssl/README.MD for instructions."
 	@echo "---------------------------------------------------------------------"
 else
@@ -50,27 +50,23 @@ else
 endif
 
 clean-certs: ## Remove generated SSL certificates and the output directory
-	@echo "Removing SSL certificates from $(CERT_DIR)..."
-	@rm -f $(CERT_KEY) $(CERT_CRT)
+	@echo "Removing SSL certificate directory $(CERT_DIR)..."
+	@rm -rf $(CERT_DIR)
 	@echo "Removing SSL certificate output directory $(CERT_OUTPUT_DIR)..."
 	@rm -rf $(CERT_OUTPUT_DIR)
-	@echo "Removing any stray certificate files from self-signed-ssl root..."
-	@rm -f ./self-signed-ssl/*.key ./self-signed-ssl/*.pem ./self-signed-ssl/*.srl ./self-signed-ssl/*.crt ./self-signed-ssl/*.csr
 	@echo "Certificates cleaned."
-
 ##
-## Docker Stack Management
+## Docker Stack Managementdocker ps
 ## -----------------------
-# The network 'traefik_proxy_network' is now created automatically by docker-compose
+# The network 'traefik_proxy_network' is created automatically by docker-compose
 
-start: ## Start the Traefik/Portainer stack (ensures certs are generated first)
-	@$(MAKE) --no-print-directory generate-certs # Ensure certs are there
+start: ## Start the Traefik/Portainer stack
 	@echo "Starting Traefik/Portainer stack..."
-	@$(DOCKER_COMP) --project-name $(PROJECT_NAME) --env-file $(ENV_FILE) up --detach
+	@$(DOCKER_COMP) --profile common --project-name $(PROJECT_NAME) --env-file $(ENV_FILE) up --detach
 
-down: ## Stop the Traefik/Portainer stack
+stop: ## Stop the Traefik/Portainer stack
 	@echo "Stopping Traefik/Portainer stack..."
-	@$(DOCKER_COMP) --project-name $(PROJECT_NAME) --env-file $(ENV_FILE) down --remove-orphans
+	@$(DOCKER_COMP) --profile common --project-name $(PROJECT_NAME) --env-file $(ENV_FILE) down --remove-orphans
 
 clean: ## Stop and remove containers, networks, and images for the stack (preserves volumes)
 	@echo "Cleaning Docker stack (containers, networks, images - volumes preserved)..."

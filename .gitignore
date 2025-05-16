@@ -18,19 +18,11 @@
 # These directories store persistent data for your services.
 # They are typically managed by Docker volumes and should not be in version control.
 portainer-data/
-traefik-data/certs/ # For ACME / Let's Encrypt certificates
+traefik-data/certs/
 
 # === Local Development SSL ===
 # Locally generated self-signed certificates for development purposes.
 self-signed-ssl/docker-localhost/
-
-# Also ignore common certificate file types directly in self-signed-ssl/
-# in case they are generated outside the docker-localhost/ subdirectory.
-self-signed-ssl/*.key
-self-signed-ssl/*.pem
-self-signed-ssl/*.srl
-self-signed-ssl/*.crt
-self-signed-ssl/*.csr
 
 # === OS-generated files ===
 # System-specific files that should not be versioned.
